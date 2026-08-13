@@ -1,3 +1,5 @@
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import * as bootstrap from 'bootstrap';
 import './styles.css';
 import { Chart, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';
@@ -94,8 +96,8 @@ async function initApp() {
 
     // 2. Initialize Bootstrap Modal
     const modalEl = document.getElementById('ruleModal');
-    if (modalEl && (window as any).bootstrap) {
-      ruleModal = new (window as any).bootstrap.Modal(modalEl);
+    if (modalEl) {
+      ruleModal = new bootstrap.Modal(modalEl);
     }
 
     // 3. Populate Case options in Target dropdown

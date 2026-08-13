@@ -1,3 +1,6 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
 :root {
   --cs-bg-dark: #0b0e14;
   --cs-card-bg: #141923;
