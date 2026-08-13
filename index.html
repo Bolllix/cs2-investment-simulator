@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="de" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS2 Investment Simulator - Regelbasierter Backtester</title>
+  
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loaderOverlay">
+    <div class="spinner-border text-warning mb-3" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
+    <h4 class="text-light fw-bold">CS2 Preisdaten werden geladen...</h4>
+    <p class="text-secondary small">Importiere 41 Cases & 10+ Jahre Markthistorie</p>
+  </div>
+
+  <!-- Top Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-cs2 py-3">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <span class="brand-badge px-2 py-1 rounded">CS2</span>
+        <span class="fw-bold fs-5 text-light">Investment Simulator</span>
+      </a>
+
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="dropdown">
+          <button class="btn btn-cs-outline btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-lightbulb-fill text-warning"></i>
+            <span>Strategie-Presets</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" id="presetDropdownMenu">
+            <!-- Dynamisch gefüllt -->
+          </ul>
+        </div>
+        <span class="badge bg-dark border border-secondary text-secondary px-3 py-2 d-none d-md-inline-block" id="marketStatsBadge">
+          <i class="bi bi-database-fill me-1 text-info"></i> 41 Cases geladen
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main App Container -->
+  <div class="container-fluid px-4 py-4">
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs nav-tabs-cs mb-4" id="mainTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="editor-tab" data-bs-toggle="tab" data-bs-target="#editor-pane" type="button" role="tab">
+          <i class="bi bi-sliders me-2"></i>Regel-Editor & Einstellungen
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results-pane" type="button" role="tab">
+          <i class="bi bi-graph-up-arrow me-2"></i>Ergebnisse & Analytics
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="market-tab" data-bs-toggle="tab" data-bs-target="#market-pane" type="button" role="tab">
+          <i class="bi bi-shop me-2"></i>Markt-Übersicht (41 Cases)
+        </button>
+      </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="mainTabContent">
+
+      <!-- ================= TAB 1: REGEL-EDITOR & EINSTELLUNGEN ================= -->
+      <div class="tab-pane fade show active" id="editor-pane" role="tabpanel">
+        <div class="row g-4">
+
+          <!-- Left Column: Simulation Parameters -->
+          <div class="col-lg-4 col-xl-3">
+            <div class="cs-card p-4 sticky-lg-top" style="top: 2rem; z-index: 10;">
+              <h5 class="fw-bold mb-3 text-light d-flex align-items-center gap-2">
+                <i class="bi bi-gear-wide-connected text-warning"></i> Simulations-Setup
+              </h5>
+
+              <form id="simConfigForm">
+                <!-- Starting Cash -->
+                <div class="mb-3">
+                  <label for="initialCashInput" class="form-label">Startkapital (€)</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-secondary">€</span>
+                    <input type="number" class="form-control fw-bold" id="initialCashInput" value="500" min="10" max="1000000" step="50" required />
+                  </div>
+                </div>
+
+                <!-- Date Range Selection -->
+                <div class="mb-3">
+                  <label for="timeframePresetSelect" class="form-label">Zeitraum</label>
+                  <select class="form-select mb-2" id="timeframePresetSelect">
+                    <option value="MAX" selected>Maximal (Alle verfuegbaren Jahre ~2013-heute)</option>
+                    <option value="5Y">Letzte 5 Jahre</option>
+                    <option value="3Y">Letzte 3 Jahre</option>
+                    <option value="1Y">Letztes 1 Jahr</option>
+                    <option value="CUSTOM">Benutzerdefiniertes Datum</option>
+                  </select>
+                  
+                  <div class="row g-2 d-none" id="customDateRow">
+                    <div class="col-6">
+                      <label class="form-label text-muted small">Start</label>
+                      <input type="date" class="form-control form-control-sm" id="startDateInput" />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label text-muted small">Ende</label>
+                      <input type="date" class="form-control form-control-sm" id="endDateInput" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Market Fee Slider -->
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="feeSlider" class="form-label mb-0">Verkaufs-Gebühr (%)</label>
+                    <span class="badge bg-warning text-dark fw-bold fs-6" id="feeBadgeDisplay">15 %</span>
+                  </div>
+                  <input type="range" class="form-range" id="feeSlider" min="0" max="20" step="0.5" value="15" />
+                  
+                  <!-- Fee Presets -->
+                  <div class="d-flex flex-wrap gap-1 mt-2">
+                    <button type="button" class="btn btn-cs-outline btn-sm py-0 px-2 text-nowrap fee-preset-btn" data-fee="15">
+                      Steam (15%)
+                    </button>
+                    <button type="button" class="btn btn-cs-outline btn-sm py-0 px-2 text-nowrap fee-preset-btn" data-fee="2">
+                      CSFloat (2%)
+                    </button>
+                    <button type="button" class="btn btn-cs-outline btn-sm py-0 px-2 text-nowrap fee-preset-btn" data-fee="12">
+                      Skinport (12%)
+                    </button>
+                    <button type="button" class="btn btn-cs-outline btn-sm py-0 px-2 text-nowrap fee-preset-btn" data-fee="0">
+                      0% (Keine)
+                    </button>
+                  </div>
+                  <div class="form-text text-secondary mt-1">
+                    Gebühr, die beim Verkaufen vom Brutto-Erlös abgezogen wird.
+                  </div>
+                </div>
+
+                <!-- Start Simulation CTA -->
+                <button type="submit" class="btn btn-cs-gold w-100 py-3 fs-5 d-flex align-items-center justify-content-center gap-2" id="startSimBtn">
+                  <i class="bi bi-play-fill fs-4"></i> Simulation Starten
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right Column: Rules Builder & List -->
+          <div class="col-lg-8 col-xl-9">
+            <div class="cs-card p-4 mb-4">
+              <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+                <div>
+                  <h4 class="fw-bold text-light mb-1">Deine Trading-Regeln</h4>
+                  <p class="text-secondary mb-0">Erstelle Regeln zur automatisierten Kauf- und Verkaufslogik im Backtest</p>
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-cs-cyan btn-sm d-flex align-items-center gap-1" id="addRuleBtn">
+                    <i class="bi bi-plus-circle-fill"></i> Neue Regel erstellen
+                  </button>
+                  <button type="button" class="btn btn-cs-outline btn-sm text-danger" id="clearRulesBtn">
+                    <i class="bi bi-trash"></i> Alle loeschen
+                  </button>
+                </div>
+              </div>
+
+              <!-- Rules Container -->
+              <div id="rulesListContainer">
+                <!-- Dynamisch gefüllte Regel-Karten -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: ERGEBNISSE & ANALYTICS ================= -->
+      <div class="tab-pane fade" id="results-pane" role="tabpanel">
+        
+        <!-- Metrics Row -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 col-lg-3">
+            <div class="metric-box">
+              <div class="metric-title">Endwert Portfolio</div>
+              <div class="metric-value text-light" id="metricFinalValue">0,00 €</div>
+              <div class="small mt-1" id="metricRoiDisplay">+0.00%</div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="metric-box">
+              <div class="metric-title">Reiner Gewinn / Verlust</div>
+              <div class="metric-value text-success" id="metricProfit">0,00 €</div>
+              <div class="small text-secondary mt-1" id="metricInitialDisplay">Start: 500,00 €</div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="metric-box">
+              <div class="metric-title">Trades & Win-Rate</div>
+              <div class="metric-value text-info" id="metricTrades">0</div>
+              <div class="small text-secondary mt-1" id="metricWinRate">Win-Rate: 0%</div>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3">
+            <div class="metric-box">
+              <div class="metric-title">Max Drawdown & Gebuehren</div>
+              <div class="metric-value text-warning" id="metricDrawdown">0.00%</div>
+              <div class="small text-secondary mt-1" id="metricFees">Gezahlte Gebuehren: 0,00 €</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Chart Card -->
+        <div class="cs-card p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-light mb-0">
+              <i class="bi bi-graph-up text-info me-2"></i> Portfolio Wertentwicklung über Zeit
+            </h5>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="chartMode" id="chartModeTotal" checked>
+              <label class="btn btn-outline-secondary" for="chartModeTotal">Gesamtwert</label>
+              <input type="radio" class="btn-check" name="chartMode" id="chartModeSplit">
+              <label class="btn btn-outline-secondary" for="chartModeSplit">Cash vs. Kisten</label>
+            </div>
+          </div>
+
+          <div style="position: relative; height: 420px;">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Rule Breakdown & Holdings Split -->
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="cs-card p-4 h-100">
+              <h6 class="fw-bold text-light mb-3">
+                <i class="bi bi-pie-chart-fill text-warning me-2"></i> Regel-Performance Übersicht
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-cs align-middle">
+                  <thead>
+                    <tr>
+                      <th>Regel Name</th>
+                      <th>Ausloesungen</th>
+                      <th>Volumen (€)</th>
+                      <th>Gewinn (€)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ruleStatsTableBody">
+                    <tr><td colspan="4" class="text-center text-secondary">Noch keine Simulation gelaufen</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="cs-card p-4 h-100">
+              <h6 class="fw-bold text-light mb-3">
+                <i class="bi bi-box-seam-fill text-primary me-2"></i> Verbleibendes Kisten-Portfolio
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-cs align-middle">
+                  <thead>
+                    <tr>
+                      <th>Case Name</th>
+                      <th>Stueckzahl</th>
+                      <th>Ø Kaufpreis</th>
+                      <th>Aktueller Wert</th>
+                    </tr>
+                  </thead>
+                  <tbody id="holdingsTableBody">
+                    <tr><td colspan="4" class="text-center text-secondary">Keine Kisten im Bestand</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction History Card -->
+        <div class="cs-card p-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+            <h5 class="fw-bold text-light mb-0">
+              <i class="bi bi-receipt text-success me-2"></i> Transaktions-Historie
+            </h5>
+            <div class="d-flex gap-2">
+              <input type="text" class="form-control form-control-sm" id="txSearchInput" placeholder="Suchen (z.B. Fracture)..." style="width: 220px;" />
+              <select class="form-select form-select-sm" id="txFilterAction" style="width: 130px;">
+                <option value="ALL">Alle Trades</option>
+                <option value="BUY">Nur Käufe</option>
+                <option value="SELL">Nur Verkäufe</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-cs table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Datum</th>
+                  <th>Aktion</th>
+                  <th>Case Name</th>
+                  <th>Stueck</th>
+                  <th>Preis/Stk</th>
+                  <th>Brutto (€)</th>
+                  <th>Gebühr (€)</th>
+                  <th>Netto (€)</th>
+                  <th>Regel</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsTableBody">
+                <tr><td colspan="9" class="text-center text-secondary">Starte eine Simulation, um Trades zu sehen.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= TAB 3: MARKT-ÜBERSICHT ================= -->
+      <div class="tab-pane fade" id="market-pane" role="tabpanel">
+        <div class="cs-card p-4 mb-4">
+          <div class="row g-3 align-items-center mb-3">
+            <div class="col-md-6">
+              <h4 class="fw-bold text-light mb-0">CS2 Case Katalog & Preis-Historie</h4>
+              <p class="text-secondary small mb-0">Alle 41 geladenen Gegenstände mit ihren min/max Marktpreisen</p>
+            </div>
+            <div class="col-md-6">
+              <input type="text" class="form-control" id="marketSearchInput" placeholder="Kiste suchen (z.B. Breakout, Chroma, Hydra)..." />
+            </div>
+          </div>
+
+          <div class="row g-3" id="marketGridContainer">
+            <!-- Dynamisch gefüllte Case-Karten -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL: REGEL BEARBEITEN / ERSTELLEN ================= -->
+  <div class="modal fade" id="ruleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content cs-card border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-light fw-bold" id="ruleModalTitle">Regel konfigurieren</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="ruleForm">
+            <input type="hidden" id="ruleEditId" value="" />
+
+            <!-- Rule Name -->
+            <div class="mb-3">
+              <label for="ruleNameInput" class="form-label">Regel-Bezeichnung</label>
+              <input type="text" class="form-control" id="ruleNameInput" placeholder="z.B. Guenstige Kiste im 20% Dip kaufen" required />
+            </div>
+
+            <!-- WAS & WAS TUN -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="ruleTargetSelect" class="form-label">1. Was? (Ziel-Kiste)</label>
+                <select class="form-select" id="ruleTargetSelect">
+                  <optgroup label="Dynamische Filter">
+                    <option value="CHEAPEST_CASE">Günstigste Kiste am Tag</option>
+                    <option value="MOST_EXPENSIVE_CASE">Teuerste Kiste am Tag</option>
+                    <option value="TOP_GAINER_7D">Stärkster Gewinner (7 Tage)</option>
+                    <option value="TOP_LOSER_7D">Stärkster Verlierer (7 Tage)</option>
+                    <option value="ALL_CASES">Alle Kisten (Globale Regel)</option>
+                  </optgroup>
+                  <optgroup label="Spezifische Case" id="ruleTargetCaseOptions">
+                    <!-- Dynamisch gefüllt -->
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="ruleActionSelect" class="form-label">2. Was tun? (Aktion)</label>
+                <select class="form-select" id="ruleActionSelect">
+                  <option value="BUY" selected>KAUFEN (Buy)</option>
+                  <option value="SELL">VERKAUFEN (Sell)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- MENGE / BUDGET -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label for="ruleBudgetModeSelect" class="form-label">3. Wie viel? (Mengen-Typ)</label>
+                <select class="form-select" id="ruleBudgetModeSelect">
+                  <option value="FIXED_EUR">Fester Geldbetrag in €</option>
+                  <option value="PERCENT_CASH">Prozent vom verfuegbaren Cash</option>
+                  <option value="PERCENT_HOLDING">Prozent vom Kisten-Bestand</option>
+                  <option value="FIXED_UNITS">Feste Stueckzahl</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="ruleBudgetValueInput" class="form-label" id="ruleBudgetValueLabel">Wert (€ / % / Stk)</label>
+                <input type="number" class="form-control" id="ruleBudgetValueInput" value="100" min="0.1" step="0.1" required />
+              </div>
+            </div>
+
+            <hr class="border-secondary my-4" />
+
+            <!-- BEDINGUNG 1 -->
+            <h6 class="fw-bold text-info mb-3">4. Bedingung 1</h6>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="cond1TypeSelect" class="form-label">Bedingungs-Typ</label>
+                <select class="form-select" id="cond1TypeSelect">
+                  <option value="ALWAYS">Immer ausführen (Ohne Bedingung)</option>
+                  <option value="PRICE_LESS_THAN">Preis unter X €</option>
+                  <option value="PRICE_GREATER_THAN">Preis über X €</option>
+                  <option value="PRICE_DROP_PERCENT_N_DAYS">Preis gesunken um X % in N Tagen</option>
+                  <option value="PRICE_RISE_PERCENT_N_DAYS">Preis gestiegen um X % in N Tagen</option>
+                  <option value="HOLDING_TIME_DAYS">Haltedauer > N Tage</option>
+                  <option value="PROFIT_PERCENT_GREATER">Positionsgewinn > X %</option>
+                  <option value="PROFIT_PERCENT_LESS">Positionsgewinn &lt; X % (Stop Loss)</option>
+                  <option value="CALENDAR_MONTHLY">Jeden N. Tag im Monat (DCA)</option>
+                  <option value="PORTFOLIO_CASH_GREATER">Verfuegbares Cash > X €</option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label for="cond1ValueInput" class="form-label">Schwellenwert (X)</label>
+                <input type="number" class="form-control" id="cond1ValueInput" value="20" step="0.01" />
+              </div>
+
+              <div class="col-md-3" id="cond1DaysCol">
+                <label for="cond1DaysInput" class="form-label">Tage (N)</label>
+                <input type="number" class="form-control" id="cond1DaysInput" value="7" min="1" max="365" />
+              </div>
+            </div>
+
+            <!-- LOGIC OPERATOR -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="ruleOperatorSelect" class="form-label fw-bold text-warning">Verknüpfung mit 2. Bedingung</label>
+                <select class="form-select border-warning" id="ruleOperatorSelect">
+                  <option value="NONE" selected>Keine 2. Bedingung</option>
+                  <option value="AND">UND (Beide Bedingungen muessen stimmen)</option>
+                  <option value="OR">ODER (Mindestens eine Bedingung muss stimmen)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- BEDINGUNG 2 -->
+            <div id="cond2Group" class="d-none">
+              <h6 class="fw-bold text-info mb-3">5. Bedingung 2</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="cond2TypeSelect" class="form-label">Bedingungs-Typ 2</label>
+                  <select class="form-select" id="cond2TypeSelect">
+                    <option value="ALWAYS">Immer ausführen</option>
+                    <option value="PRICE_LESS_THAN">Preis unter X €</option>
+                    <option value="PRICE_GREATER_THAN">Preis über X €</option>
+                    <option value="PRICE_DROP_PERCENT_N_DAYS">Preis gesunken um X % in N Tagen</option>
+                    <option value="PRICE_RISE_PERCENT_N_DAYS">Preis gestiegen um X % in N Tagen</option>
+                    <option value="HOLDING_TIME_DAYS">Haltedauer > N Tage</option>
+                    <option value="PROFIT_PERCENT_GREATER">Positionsgewinn > X %</option>
+                    <option value="PROFIT_PERCENT_LESS">Positionsgewinn &lt; X % (Stop Loss)</option>
+                    <option value="CALENDAR_MONTHLY">Jeden N. Tag im Monat (DCA)</option>
+                    <option value="PORTFOLIO_CASH_GREATER">Verfuegbares Cash > X €</option>
+                  </select>
+                </div>
+
+                <div class="col-md-3">
+                  <label for="cond2ValueInput" class="form-label">Schwellenwert (X)</label>
+                  <input type="number" class="form-control" id="cond2ValueInput" value="50" step="0.01" />
+                </div>
+
+                <div class="col-md-3" id="cond2DaysCol">
+                  <label for="cond2DaysInput" class="form-label">Tage (N)</label>
+                  <input type="number" class="form-control" id="cond2DaysInput" value="7" min="1" max="365" />
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-cs-outline" data-bs-dismiss="modal">Abbrechen</button>
+          <button type="button" class="btn btn-cs-gold" id="saveRuleBtn">Regel Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Vite Main Entry point -->
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

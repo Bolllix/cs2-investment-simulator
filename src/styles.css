@@ -1,0 +1,285 @@
+:root {
+  --cs-bg-dark: #0b0e14;
+  --cs-card-bg: #141923;
+  --cs-card-border: rgba(255, 255, 255, 0.08);
+  --cs-card-hover: #1b2230;
+  
+  --cs-gold: #de9b35;
+  --cs-cyan: #00bcff;
+  --cs-purple: #a040ff;
+  --cs-pink: #d926b5;
+  --cs-red: #ff3344;
+  --cs-green: #00e676;
+  --cs-gray: #8b98a5;
+
+  --bs-body-bg: var(--cs-bg-dark);
+  --bs-body-color: #e1e7ec;
+  --bs-font-sans-serif: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--cs-bg-dark);
+  color: var(--bs-body-color);
+  font-family: var(--bs-font-sans-serif);
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #252e3e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #37455d;
+}
+
+/* Navigation Bar */
+.navbar-cs2 {
+  background: linear-gradient(180deg, #161c28 0%, #10141d 100%);
+  border-bottom: 1px solid rgba(222, 155, 53, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.brand-badge {
+  background: linear-gradient(135deg, rgba(222, 155, 53, 0.2), rgba(0, 188, 255, 0.2));
+  border: 1px solid rgba(222, 155, 53, 0.5);
+  color: var(--cs-gold);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Cards & Containers */
+.cs-card {
+  background: var(--cs-card-bg);
+  border: 1px solid var(--cs-card-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.cs-card:hover {
+  border-color: rgba(222, 155, 53, 0.3);
+}
+
+.cs-card-header {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--cs-card-border);
+  padding: 1rem 1.25rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+/* Rule Card */
+.rule-item-card {
+  background: #19202e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid var(--cs-cyan);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.rule-item-card.action-SELL {
+  border-left-color: var(--cs-gold);
+}
+
+.rule-item-card:hover {
+  background: #1e2738;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.rule-badge-buy {
+  background: rgba(0, 230, 118, 0.15);
+  color: #00e676;
+  border: 1px solid rgba(0, 230, 118, 0.4);
+}
+
+.rule-badge-sell {
+  background: rgba(222, 155, 53, 0.15);
+  color: var(--cs-gold);
+  border: 1px solid rgba(222, 155, 53, 0.4);
+}
+
+.condition-pill {
+  background: rgba(0, 188, 255, 0.1);
+  color: #70d6ff;
+  border: 1px solid rgba(0, 188, 255, 0.25);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+/* Form Controls Dark Theme */
+.form-control, .form-select {
+  background-color: #10141d;
+  border: 1px solid #2a3447;
+  color: #e1e7ec;
+  border-radius: 8px;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: #131924;
+  border-color: var(--cs-cyan);
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(0, 188, 255, 0.15);
+}
+
+.form-label {
+  color: #aab6c4;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Custom Range Slider */
+.form-range::-webkit-slider-thumb {
+  background: var(--cs-gold);
+  border: 2px solid #fff;
+}
+
+/* Buttons */
+.btn-cs-gold {
+  background: linear-gradient(135deg, #e5a439 0%, #b87a1d 100%);
+  color: #0b0e14;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 14px rgba(222, 155, 53, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-cs-gold:hover {
+  background: linear-gradient(135deg, #f0b043 0%, #c98725 100%);
+  color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(222, 155, 53, 0.45);
+}
+
+.btn-cs-cyan {
+  background: linear-gradient(135deg, #00bcff 0%, #0088cc 100%);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 14px rgba(0, 188, 255, 0.3);
+}
+
+.btn-cs-cyan:hover {
+  background: linear-gradient(135deg, #28c7ff 0%, #009be6 100%);
+  color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 188, 255, 0.45);
+}
+
+.btn-cs-outline {
+  background: transparent;
+  border: 1px solid #2a3447;
+  color: #c0cbd8;
+}
+
+.btn-cs-outline:hover {
+  background: #1f2737;
+  border-color: #435472;
+  color: #fff;
+}
+
+/* Metric Boxes */
+.metric-box {
+  background: linear-gradient(145deg, #161d2b 0%, #111622 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 1.1rem;
+}
+
+.metric-title {
+  color: var(--cs-gray);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.3rem;
+}
+
+.metric-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Table Dark Styling */
+.table-cs {
+  --bs-table-bg: transparent;
+  --bs-table-color: #dbe2e9;
+  border-color: #212a39;
+}
+
+.table-cs th {
+  background: #11151e;
+  color: #8b98a5;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #273245;
+}
+
+.table-cs td {
+  vertical-align: middle;
+}
+
+/* Tab Navigation */
+.nav-tabs-cs {
+  border-bottom: 1px solid #232c3d;
+}
+
+.nav-tabs-cs .nav-link {
+  color: var(--cs-gray);
+  border: none;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.nav-tabs-cs .nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nav-tabs-cs .nav-link.active {
+  color: var(--cs-gold);
+  background: transparent;
+  border-bottom: 3px solid var(--cs-gold);
+}
+
+/* Case Grid & Items */
+.case-grid-item {
+  background: #151a24;
+  border: 1px solid #232c3d;
+  border-radius: 8px;
+  padding: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.case-grid-item:hover {
+  border-color: var(--cs-cyan);
+  background: #1a2230;
+}
+
+/* Loader Overlay */
+#loaderOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(11, 14, 20, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
