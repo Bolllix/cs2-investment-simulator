@@ -28,7 +28,7 @@ export function parseRawDate(rawStr: string): { dateStr: string; timestamp: numb
     return null;
   }
 
-  const dateStr = `${year}-${monthNum}-${day}`;                 // Example output: "2013-8-14"
+  const dateStr = `${year}-${monthNum}-${day}`;                 // Example output: "2013-08-14" (ISO format, sortable)
   const timestamp = Date.UTC(Number(year), monthIdx, Number(day));
   return { dateStr, timestamp };
 }
@@ -60,7 +60,7 @@ export class DataLoader {
       
       // Match leading order number if present
       const match = cleanName.match(/^(\d+)\.\s*(.+)$/);
-      const orderNumber = match ? parseInt(match[1], 10) : 999;
+      const orderNumber = match ? parseInt(match[1], 10) : 999;             // Order Number = The number 1 from 1. CSGO Weapon Case
       const name = match ? match[2] : cleanName;
 
       // Group raw prices by date (average price per day)
