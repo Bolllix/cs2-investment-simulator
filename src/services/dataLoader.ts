@@ -14,7 +14,7 @@ const MONTH_INDEX: Record<string, number> = {
 
 export function parseRawDate(rawStr: string): { dateStr: string; timestamp: number } | null {
   // Example format: "Aug 14 2013 01: +0"
-  const parts = rawStr.trim().split(/\s+/);
+  const parts = rawStr.trim().split(/\s+/);         // Splits the strings at the whitespaces
   if (parts.length < 3) return null;
 
   const mon = parts[0];
@@ -24,11 +24,11 @@ export function parseRawDate(rawStr: string): { dateStr: string; timestamp: numb
   const monthNum = MONTH_MAP[mon];
   const monthIdx = MONTH_INDEX[mon];
 
-  if (!monthNum || monthIdx === undefined || isNaN(Number(year)) || isNaN(Number(day))) {
+  if (!monthNum || monthIdx === undefined || isNaN(Number(year)) || isNaN(Number(day))) {         // Checks if every Value is correct
     return null;
   }
 
-  const dateStr = `${year}-${monthNum}-${day}`;
+  const dateStr = `${year}-${monthNum}-${day}`;                 // Example output: "2013-8-14"
   const timestamp = Date.UTC(Number(year), monthIdx, Number(day));
   return { dateStr, timestamp };
 }
@@ -44,19 +44,19 @@ export class DataLoader {
 
     const cases: CaseMeta[] = [];
     
-    // Import all JSON files using Vite's glob import
+    // Import all JSON files using Vite's glob import. String = relative filepath any = Imported Json Module
     const jsonModules = import.meta.glob('/json/*.json', { eager: true }) as Record<string, any>;
 
-    for (const path in jsonModules) {
-      const moduleData = jsonModules[path]?.default || jsonModules[path];
-      if (!moduleData || !moduleData.prices || !Array.isArray(moduleData.prices)) {
+    for (const path in jsonModules) {       // Iterates over all. Path = relative filepath
+      const moduleData = jsonModules[path]?.default || jsonModules[path];       // It safely extracts the module's default export if it exists, otherwise falling back to the entire imported module object.
+      if (!moduleData || !moduleData.prices || !Array.isArray(moduleData.prices)) {    // Checks if Data is there
         continue;
       }
 
       // Extract filename and name
       // Path format example: "/json/1. CSGO Weapon Case.json"
-      const filename = path.split('/').pop() || path;
-      const cleanName = filename.replace(/\.json$/i, '');
+      const filename = path.split('/').pop() || path;                       // Example: 1. CSGO Weapon Case.json
+      const cleanName = filename.replace(/\.json$/i, '');     // Example: 1. CSGO Weapon Case
       
       // Match leading order number if present
       const match = cleanName.match(/^(\d+)\.\s*(.+)$/);
